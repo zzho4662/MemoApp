@@ -17,6 +17,18 @@ import java.util.ArrayList;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 
+    public static final String CREATE_MEMO_TABLE = "create table " +
+            Util.TABLE_MEMO + "(" +
+            Util.KEY_ID + " integer not null primary key autoincrement," +
+            Util.KEY_TITLE + " text, " +
+            Util.KEY_CONTENT + " text )";
+
+    public static final String CREATE_MEMO_IMAGE_TABLE = "create table " +
+            Util.TABLE_IMAGE + "(" +
+            Util.KEY_ID + " integer not null primary key autoincrement," +
+            Util.KEY_IMAGE + " BLOB, " +
+            Util.KEY_MEMO_ID + " integer )";
+
     public DatabaseHandler(@Nullable Context context) {
         super(context, Util.DATABASE_NAME, null, Util.DATABASE_VERSION);
     }
@@ -24,20 +36,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // 1. 테이블 생성문 SQLite 문법에 맞게 작성해야 한다.
-        String CREATE_MEMO_TABLE = "create table " +
-                Util.TABLE_NAME + "(" +
-                Util.KEY_ID + " integer not null primary key autoincrement," +
-                Util.KEY_TITLE + " text, " +
-                Util.KEY_CONTENT + " text )";
+        db.execSQL(CREATE_MEMO_TABLE);
+        db.execSQL(CREATE_MEMO_IMAGE_TABLE);
 
         // 2. 쿼리 실행
         db.execSQL(CREATE_MEMO_TABLE);
+        db.execSQL(CREATE_MEMO_IMAGE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        String DROP_TABLE = "drop table " + Util.TABLE_NAME;
-        db.execSQL(DROP_TABLE);
+        String DROP_TABLE_MEMO = "drop table " + Util.TABLE_MEMO;
+        String DROP_TABLE_IMAGE = "drop table " + Util.TABLE_IMAGE;
+        db.execSQL(DROP_TABLE_MEMO);
+        db.execSQL(DROP_TABLE_IMAGE);
 
         // 테이블 새로 다시 생성.
         onCreate(db);
@@ -54,7 +66,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(Util.KEY_TITLE, memo.getTitle());
         values.put(Util.KEY_CONTENT, memo.getContent());
         // 3. db에 실제로 저장한다.
-        db.insert(Util.TABLE_NAME, null, values);
+        db.insert(Util.TABLE_MEMO, null, values);
         db.close();
         Log.i("myDB", "inserted.");
     }
@@ -66,7 +78,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // select id, title, content from memo where id = 2;
         // 2. 데이터를 셀렉트(조회) 할때는, Cursor 를 이용해야 한다.
-        Cursor cursor = db.query(Util.TABLE_NAME,
+        Cursor cursor = db.query(Util.TABLE_MEMO,
                 new String[] {"id", "title", "content"},
                 Util.KEY_ID + " = ? ",
                 new String[]{String.valueOf(id)},
@@ -95,7 +107,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         ArrayList<Memo> memoList = new ArrayList<>();
 
         // 2. 데이터베이스에 select (조회) 해서,
-        String selectAll = "select * from " + Util.TABLE_NAME;
+        String selectAll = "select * from " + Util.TABLE_MEMO;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectAll, null);
 
@@ -131,7 +143,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // 데이터베이스 테이블 업데이트.
         // update memo set title="홍길동", content="asdfasdf" where id = 3;
-        int ret = db.update(Util.TABLE_NAME,    // 테이블명
+        int ret = db.update(Util.TABLE_MEMO,    // 테이블명
                 values,     // 업데이트할 값
                 Util.KEY_ID + " = ? ",   // where
                 new String[]{String.valueOf(memo.getId())}); // ? 에 들어갈 값
@@ -142,7 +154,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // 데이터 삭제 메서드
     public void deleteMemo(Memo memo){
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(Util.TABLE_NAME,  // 테이블 명
+        db.delete(Util.TABLE_MEMO,  // 테이블 명
                 Util.KEY_ID + " = ?",   // where id = ?
                 new String[]{String.valueOf(memo.getId())});  // ? 에 해당하는 값.
         db.close();
@@ -151,7 +163,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // 테이블에 저장된 데이터의 전체 갯수를 리턴하는 메소드.
     public int getCount(){
         // select count(*) from memo;
-        String countQuery = "select * from " + Util.TABLE_NAME;
+        String countQuery = "select * from " + Util.TABLE_MEMO;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();
@@ -161,7 +173,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // 검색용 메소드 추가
     public ArrayList<Memo> search(String keyword){
-        String searchQuery = "select id, title, content from "+Util.TABLE_NAME+
+        String searchQuery = "select id, title, content from "+Util.TABLE_MEMO+
                 " where content like ? or title like ? ";
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(searchQuery, new String[]{"%"+keyword+"%", "%"+keyword+"%"} );
@@ -185,6 +197,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
         return memoList;
     }
+
+    // 이미지 가져오는 메소드
+
+
+
 
 
 }
