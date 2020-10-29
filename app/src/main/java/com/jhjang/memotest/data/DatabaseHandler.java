@@ -9,7 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-
+import com.jhjang.memotest.model.ImageMemo;
 import com.jhjang.memotest.model.Memo;
 import com.jhjang.memotest.util.Util;
 
@@ -23,10 +23,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             Util.KEY_TITLE + " text, " +
             Util.KEY_CONTENT + " text )";
 
-    public static final String CREATE_MEMO_IMAGE_TABLE = "create table " +
+    public static final String CREATE_IMAGE_MEMO = "create table " +
             Util.TABLE_IMAGE + "(" +
-            Util.KEY_ID + " integer not null primary key autoincrement," +
-            Util.KEY_IMAGE + " BLOB, " +
+            Util.KEY_IMAGE_ID + " integer not null primary key autoincrement," +
+            Util.KEY_IMAGE + " text, " +
             Util.KEY_MEMO_ID + " integer )";
 
     public DatabaseHandler(@Nullable Context context) {
@@ -35,21 +35,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // 1. 테이블 생성문 SQLite 문법에 맞게 작성해야 한다.
         db.execSQL(CREATE_MEMO_TABLE);
-        db.execSQL(CREATE_MEMO_IMAGE_TABLE);
+        db.execSQL(CREATE_IMAGE_MEMO);
 
-        // 2. 쿼리 실행
-        db.execSQL(CREATE_MEMO_TABLE);
-        db.execSQL(CREATE_MEMO_IMAGE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         String DROP_TABLE_MEMO = "drop table " + Util.TABLE_MEMO;
-        String DROP_TABLE_IMAGE = "drop table " + Util.TABLE_IMAGE;
+
+        String DROP_TABLE_IMAGE_MEMO = "drop table " + Util.TABLE_IMAGE;
+
         db.execSQL(DROP_TABLE_MEMO);
-        db.execSQL(DROP_TABLE_IMAGE);
+        db.execSQL(DROP_TABLE_IMAGE_MEMO);
 
         // 테이블 새로 다시 생성.
         onCreate(db);
@@ -71,6 +69,39 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Log.i("myDB", "inserted.");
     }
 
+    // 이미지 저장
+    public void addImage(String image, int memo_id){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Util.KEY_IMAGE, image);
+        values.put(Util.KEY_MEMO_ID, memo_id);
+
+        db.insert(Util.TABLE_IMAGE, null, values);
+        db.close();
+        Log.i("myDB", "inserted.");
+    }
+
+    // 메모 저장할때 ID 값 가져오는 함수
+    public Memo getMemoId(){
+        // 1. 데이터베이스 가져온다. 조회니까, readable 한 db로 가져온다.
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectId = "select "+Util.KEY_ID+" from " + Util.TABLE_MEMO + " order by " + Util.KEY_ID + " desc limit 1" ;
+
+        // select id, title, content from memo where id = 2;
+        // 2. 데이터를 셀렉트(조회) 할때는, Cursor 를 이용해야 한다.
+        Cursor cursor = db.rawQuery(selectId,null);
+        if(cursor != null){
+            cursor.moveToFirst();
+        }
+        int selectedId = Integer.parseInt(cursor.getString(0));
+        // db에서 읽어온 데이터를, 자바 클래스로 처리한다.
+        Memo memo = new Memo();
+        memo.setId(selectedId);
+
+        return memo;
+    }
+
     // 메모1개 불러오는 메소드
     public Memo getMemo(int id){
         // 1. 데이터베이스 가져온다. 조회니까, readable 한 db로 가져온다.
@@ -87,7 +118,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         if(cursor != null){
             cursor.moveToFirst();
         }
-
         int selectedId = Integer.parseInt(cursor.getString(0));
         String selectedTitle = cursor.getString(1);
         String selectedContent = cursor.getString(2);
@@ -111,10 +141,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectAll, null);
 
-        // 3. 여러개의 데이터를 루프 돌면서, Contact 클래스에 정보를 하나씩 담고
+        // 3. 여러개의 데이터를 루프 돌면서, Main 클래스에 정보를 하나씩 담고
         if(cursor.moveToFirst()){
             do {
-
                 int selectedId = Integer.parseInt(cursor.getString(0));
                 String selectedTitle = cursor.getString(1);
                 String selectedContent = cursor.getString(2);
@@ -131,6 +160,63 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }while(cursor.moveToNext());
         }
         return memoList;
+    }
+
+    // 저장된 이미지 가져오기.
+    public ArrayList<ImageMemo> getAllImage(int id){
+        // 1. 비어 있는 어레이 리스트를 먼저 한개 만든다.
+        ArrayList<ImageMemo> imageMemoArrayList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // 2. 데이터베이스에 select (조회) 해서,
+        String selectImage = "select * from " + Util.TABLE_IMAGE + " where "+Util.KEY_MEMO_ID + " = ? ";
+
+        Cursor cursor = db.rawQuery(selectImage, new String[]{String.valueOf(id)});
+
+        // 3. 여러개의 데이터를 루프 돌면서, Contact 클래스에 정보를 하나씩 담고
+        if(cursor.moveToFirst()){
+            do {
+                Log.i("AAA","cousor" + cursor.getString(0));
+                int selectedId = Integer.parseInt(cursor.getString(0));
+                String selectedImage = cursor.getString(1);
+                int selectedMemoId = cursor.getInt(2);
+                Log.i("myDB", "do while : " + selectedImage);
+                // db에서 읽어온 데이터를, 자바 클래스로 처리한다.
+                ImageMemo imageMemo = new ImageMemo();
+                imageMemo.setId(selectedId);
+                imageMemo.setImage(selectedImage);
+                imageMemo.setMemo_id(selectedMemoId);
+
+                // 4. 위의 빈 어레이리스트에 하나씩 추가를 시킨다.
+                imageMemoArrayList.add(imageMemo);
+            }while(cursor.moveToNext());
+        }
+        Log.i("AAA","sss" +imageMemoArrayList.size());
+        return imageMemoArrayList;
+    }
+
+    // 썸네일 불러오기
+    public ImageMemo getThumbnail(int memo_id){
+        // 1. 데이터베이스 가져온다. 조회니까, readable 한 db로 가져온다.
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectThumb = "select * from " + Util.TABLE_IMAGE + " where "+ Util.KEY_MEMO_ID + " = ? order by " + Util.KEY_IMAGE_ID + " limit 1" ;
+
+        // select image from imageMemo where memo_id = ? order by id limit 1 ;
+        // 2. 데이터를 셀렉트(조회) 할때는, Cursor 를 이용해야 한다.
+        Cursor cursor = db.rawQuery(selectThumb,new String[]{String.valueOf(memo_id)});
+        if(cursor != null){
+            cursor.moveToFirst();
+        }
+        int selectedId = Integer.parseInt(cursor.getString(0));
+        String selectedImage = cursor.getString(1);
+        int selectedMemoId = cursor.getInt(2);
+        // db에서 읽어온 데이터를, 자바 클래스로 처리한다.
+        ImageMemo imageMemo = new ImageMemo();
+        imageMemo.setId(selectedId);
+        imageMemo.setImage(selectedImage);
+        imageMemo.setMemo_id(selectedMemoId);
+
+        return imageMemo;
     }
 
     // 데이터를 업데이트 하는 메서드.
@@ -151,12 +237,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    // 데이터 삭제 메서드
+    // 메모 삭제 메서드
     public void deleteMemo(Memo memo){
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(Util.TABLE_MEMO,  // 테이블 명
                 Util.KEY_ID + " = ?",   // where id = ?
                 new String[]{String.valueOf(memo.getId())});  // ? 에 해당하는 값.
+        db.close();
+    }
+
+    // 이미지 삭제 메서드
+    public void deleteImage(int image_id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(Util.TABLE_IMAGE,  // 테이블 명
+                Util.KEY_IMAGE_ID + " = ?",   // where id = ?
+                new String[]{String.valueOf(image_id)});  // ? 에 해당하는 값.
         db.close();
     }
 
@@ -166,6 +261,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String countQuery = "select * from " + Util.TABLE_MEMO;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        db.close();
+        return count;
+    }
+
+    // 테이블에 저장된 데이터의 전체 갯수를 리턴하는 메소드.
+    public int getImageCnt(int id){
+        // select count(*) from memo;
+        String countQuery = "select "+Util.KEY_IMAGE +" from " + Util.TABLE_IMAGE + " where "+ Util.KEY_MEMO_ID + "= ? " ;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, new String[]{String.valueOf(id)});
         int count = cursor.getCount();
         db.close();
         return count;
@@ -197,11 +303,24 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
         return memoList;
     }
+    //업데이트 동작 (삭제 후 다시 저장)
+    // 먼저 삭제한다.
+    public void updateDeleteImage (int memo_id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(Util.TABLE_IMAGE,  // 테이블 명
+                Util.KEY_MEMO_ID + " = ?",   // where id = ?
+                new String[]{String.valueOf(memo_id)});  // ? 에 해당하는 값.
+        db.close();
+    }
+    // 이미지를 다시 저장해준다.
+    public void updateInsertImage(String image, int memo_id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Util.KEY_IMAGE, image);
+        values.put(Util.KEY_MEMO_ID, memo_id);
 
-    // 이미지 가져오는 메소드
-
-
-
-
+        db.insert(Util.TABLE_IMAGE, null, values);
+        db.close();
+    }
 
 }

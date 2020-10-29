@@ -8,12 +8,16 @@ public class Memo {
     public Memo(){
 
     }
-    public Memo(int id, String title, String content){
-        this.id = id;
+    public Memo(String title, String content) {
         this.title = title;
         this.content = content;
     }
 
+    public Memo(int id, String title, String content) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+    }
     public int getId() {
         return id;
     }

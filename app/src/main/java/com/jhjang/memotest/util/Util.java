@@ -15,6 +15,7 @@ public class Util {
     public static final String KEY_CONTENT = "content";
 
     //image 테이블의 컬럼
+    public static final String KEY_IMAGE_ID = "id";
     public static final String KEY_IMAGE = "image_url";
     public static final String KEY_MEMO_ID = "memo_id";
 

@@ -3,40 +3,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_margin="10dp"
     android:orientation="vertical"
     tools:context=".AddMemo">
 
-    <EditText
-        android:id="@+id/editTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:ems="10"
-        android:hint="제목 입력"
-        android:inputType="textPersonName"
-        android:textSize="24sp" />
-
-    <EditText
-        android:id="@+id/editContent"
-        android:layout_width="match_parent"
-        android:layout_height="460dp"
-        android:layout_weight="10"
-        android:ems="10"
-        android:hint="내용 입력"
-        android:inputType="textPersonName"
-        android:textSize="24sp" />
-
-    <androidx.recyclerview.widget.RecyclerView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/editTitle"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:ems="10"
+            android:hint="제목 입력"
+            android:textSize="24sp" />
+
+        <EditText
+            android:id="@+id/editContent"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:hint="내용 입력"
+            android:textSize="24sp"
+            android:gravity="top"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:layout_weight="18"
+        android:gravity="bottom"
         android:orientation="horizontal">
 
         <ImageView
@@ -44,20 +51,23 @@
             android:layout_width="wrap_content"
             android:layout_height="33dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/photo" />
+            app:srcCompat="@drawable/ic_photo"
+            tools:ignore="VectorDrawableCompat" />
 
         <ImageView
             android:id="@+id/imgUpdate"
             android:layout_width="wrap_content"
             android:layout_height="33dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/save" />
+            app:srcCompat="@drawable/ic_save"
+            tools:ignore="VectorDrawableCompat" />
 
         <ImageView
             android:id="@+id/imgDelete"
             android:layout_width="wrap_content"
             android:layout_height="33dp"
             android:layout_weight="1"
-            app:srcCompat="@drawable/delete" />
+            app:srcCompat="@drawable/ic_delete"
+            tools:ignore="VectorDrawableCompat" />
     </LinearLayout>
 </LinearLayout>

@@ -1,17 +1,18 @@
 package com.jhjang.memotest.model;
 
+import java.io.Serializable;
 import java.sql.Blob;
 
-public class ImageMemo {
+public class ImageMemo implements Serializable {
 
     int id;
-    Blob image;
+    String image;
     int memo_id;
 
     public ImageMemo() {
     }
 
-    public ImageMemo(int id, Blob image, int memo_id) {
+    public ImageMemo(int id, String image, int memo_id) {
         this.id = id;
         this.image = image;
         this.memo_id = memo_id;
@@ -25,11 +26,11 @@ public class ImageMemo {
         this.id = id;
     }
 
-    public Blob getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(Blob image) {
+    public void setImage(String image) {
         this.image = image;
     }
 
